@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="styles.css">
+    <title>Takım Oluşturucu ve Yönetim Sistemi - Dengeli Takımlar Kurun</title>
+<meta name="description" content="Hızlı ve kolay bir şekilde rastgele takımlar oluşturun.">
+<meta name="keywords" content="takım oluşturucu, random takım, takım oluşturma, grup oluşturma, takım kurma, futbol takım kurma, oyuncu yönetimi, mevki dengeleme, güç dengeleme, spor takımları">
+
+<meta charset="UTF-8">
+<meta name="robots" content="index, follow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+     <div class="container">
+        <h1>⚽ Takım Yönetim Sistemi</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('players')">👥 Oyuncu Yönetimi</button>
+            <button class="tab" onclick="switchTab('teams')">🎲 Takım Oluştur</button>
+            <button class="tab" onclick="switchTab('backup')">💾 Yedekleme</button>
+        </div>
+
+        <div id="players-tab" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Toplam Oyuncu</div>
+                </div>
+                <div class="stat-card available">
+                    <div class="stat-number" id="availableCount">0</div>
+                    <div class="stat-label">Maça Gelecek</div>
+                </div>
+                <div class="stat-card unavailable">
+                    <div class="stat-number" id="unavailableCount">0</div>
+                    <div class="stat-label">Maça Gelmeyecek</div>
+                </div>
+            </div>
+
+            <div class="player-management">
+                <div class="add-player-form">
+                    <div class="form-group">
+                        <label for="playerName">Oyuncu Adı</label>
+                        <input type="text" id="playerName" placeholder="Oyuncu adını girin">
+                    </div>
+                    <div class="form-group">
+                        <label for="playerPosition">Mevki</label>
+                        <select  id="playerPosition">
+                            <option value="">Seçiniz</option>
+                            <option value="Kaleci">Kaleci</option>
+                            <option value="Defans">Defans</option>
+                            <option value="Orta Saha">Orta Saha</option>
+                            <option value="Forvet">Forvet</option>
+                            <option value="Libero">Libero</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="playerPower">Güç (0-100)</label>
+                        <input type="number" id="playerPower" min="0" max="100" value="50">
+                    </div>
+                    <button class="btn" onclick="addPlayer()">➕ Oyuncu Ekle</button>
+                </div>
+
+                <div id="playersTableContainer">
+                    <table class="players-table" id="playersTable">
+                        <thead>
+                            <tr>
+                                <th>Oyuncu Adı</th>
+                                <th>Mevki</th>
+                                <th>Güç</th>
+                                <th>Maça Gelecek mi?</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="teams-tab" class="tab-content">
+            <div class="team-creation">
+                <div class="available-count">
+                    <span id="availablePlayersCount">0</span> oyuncu maça gelecek
+                </div>
+                <button class="create-teams-btn" onclick="createTeams()" id="createTeamsBtn">
+                    🎲 TAKIMLARI OLUŞTUR
+                </button>
+            </div>
+
+            <div class="teams-container" id="teamsContainer" style="display: none;">
+                <div class="team team-a">
+                    <h3>🔴 A TAKIMI</h3>
+                    <ul class="player-list" id="teamA"></ul>
+                    <div class="team-count" id="countA"></div>
+                    <div class="team-power-avg" id="avgPowerA"></div>
+                </div>
+                
+                <div class="team team-b">
+                    <h3>🔵 B TAKIMI</h3>
+                    <ul class="player-list" id="teamB"></ul>
+                    <div class="team-count" id="countB"></div>
+                    <div class="team-power-avg" id="avgPowerB"></div>
+                </div>
+            </div>
+        </div>
+        <div id="backup-tab" class="tab-content">
+            <div class="player-management">
+                <h2 style="text-align: center; color: #4a5568; margin-bottom: 25px;">💾 Veri Yedekleme ve Geri Yükleme</h2>
+                
+                <div style="background: rgba(255, 235, 59, 0.1); border: 2px solid #ffc107; border-radius: 15px; padding: 20px; margin-bottom: 25px;">
+                    <h3 style="color: #f57c00; margin-bottom: 10px;">⚠️ Önemli Bilgi</h3>
+                    <p style="color: #e65100; margin: 0; line-height: 1.6;">
+                        Tarayıcı kapatıldığında verileriniz kaybolur. Oyuncu listesini korumak için aşağıdaki yedekleme özelliklerini kullanın:
+                    </p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                    <div style="background: rgba(72, 187, 120, 0.1); border-radius: 15px; padding: 20px; text-align: center;">
+                        <h3 style="color: #2f855a; margin-bottom: 15px;">📤 Veri Dışa Aktarma</h3>
+                        <p style="color: #2d3748; margin-bottom: 15px; font-size: 14px;">
+                            Oyuncu listenizi JSON dosyası olarak indirin
+                        </p>
+                        <button class="btn" onclick="exportData()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+                            📥 Veriyi İndir
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(49, 130, 206, 0.1); border-radius: 15px; padding: 20px; text-align: center;">
+                        <h3 style="color: #2b6cb0; margin-bottom: 15px;">📤 Veri İçe Aktarma</h3>
+                        <p style="color: #2d3748; margin-bottom: 15px; font-size: 14px;">
+                            Daha önce indirdiğiniz dosyayı yükleyin
+                        </p>
+                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                        <button class="btn" onclick="document.getElementById('importFile').click()" style="background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);">
+                            📂 Dosya Seç
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(102, 126, 234, 0.1); border-radius: 15px; padding: 20px;">
+                    <h3 style="color: #5a67d8; margin-bottom: 15px;">📋 Manuel Yedekleme</h3>
+                    <p style="color: #2d3748; margin-bottom: 15px; font-size: 14px;">
+                        Aşağıdaki metni kopyalayıp not defterine kaydedin. Daha sonra buraya yapıştırarak geri yükleyebilirsiniz.
+                    </p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <button class="btn btn-small" onclick="generateBackupText()" style="margin-right: 10px;">
+                            🔄 Yedek Kodu Oluştur
+                        </button>
+                        <button class="btn btn-small" onclick="copyBackupText()" id="copyBtn" style="display: none;">
+                            📋 Kopyala
+                        </button>
+                    </div>
+                    
+                    <textarea id="backupText" style="width: 100%; height: 100px; padding: 15px; border: 2px solid #cbd5e0; border-radius: 10px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="Yedek kodu buraya görünecek veya geri yüklemek için buraya yapıştırın"></textarea>
+                    
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button class="btn" onclick="restoreFromText()" style="background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);">
+                            🔄 Metinden Geri Yükle
+                        </button>
+                    </div>
+                </div>
+
+                <div id="backupStatus" style="margin-top: 20px; padding: 15px; border-radius: 10px; text-align: center; display: none;"></div>
+            </div>
+        </div>
+        <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; <span id="currentYear"></span> Takım Oluşturucu. Tüm Hakları Saklıdır.</p>
+            <p>Created By: <a href="https://github.com/fathf3" target="_blank" rel="noopener noreferrer">F3</a></p>
+            
+                <a href="#" onclick="alert('Gizlilik Politikası yakında eklenecektir.'); return false;">Gizlilik Politikası</a>
+                <a href="#" onclick="alert('Kullanım Koşulları yakında eklenecektir.'); return false;">Kullanım Koşulları</a>
+           
+        </div>
+    </footer>
+    <script src="teambuilder.js"></script>
+</body>
+</html>
