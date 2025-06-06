@@ -36,10 +36,7 @@ Projenin geliştirilmesine katkıda bulunmaktan çekinmeyin! Fikirleriniz, hata 
 4.  Dalı push edin: `git push origin ozellik/yeni-ozellik`
 5.  Bir Pull Request (Çekme İsteği) oluşturun.
 
-## 📞 İletişim
 
-* **Geliştirici:** [Senin Adın/Kullanıcı Adın](https://github.com/senin-github-kullanici-adin)
-* **E-posta:** [senin-eposta@example.com](mailto:senin-eposta@example.com) (isteğe bağlı)
 
 ## 📝 Lisans
 
