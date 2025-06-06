@@ -179,6 +179,57 @@
            
         </div>
     </footer>
+     <!-- Oyuncu Düzenleme Modalı -->
+    <div id="editPlayerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Oyuncuyu Düzenle</h2>
+            <input type="hidden" id="editPlayerId">
+            <div class="form-group">
+                <label for="editPlayerName">Oyuncu Adı</label>
+                <input type="text" id="editPlayerName" placeholder="Oyuncu adını girin">
+            </div>
+            <div class="form-group">
+                <label for="editPlayerPosition">Mevki</label>
+                <select id="editPlayerPosition">
+                    <option value="Kaleci">Kaleci</option>
+                    <option value="Defans">Defans</option>
+                    <option value="Orta Saha">Orta Saha</option>
+                    <option value="Forvet">Forvet</option>
+                    <option value="Libero">Libero</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editPlayerPower">Güç (0-100)</label>
+                <input type="number" id="editPlayerPower" min="0" max="100">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-save" onclick="saveEditedPlayer()">Kaydet</button>
+                <button class="btn btn-cancel" onclick="closeEditModal()">İptal</button>
+            </div>
+            <div id="editStatus" class="status-message" style="display: none; margin-top: 15px;"></div>
+        </div>
+    </div>
+      <!-- Genel Onay Modalı (Alert ve Confirm Yerine) -->
+    <div id="customAlertModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 id="customAlertTitle" style="text-align: center; color: #4a5568; margin-bottom: 20px;">Bilgi</h2>
+            <p id="customAlertMessage" style="text-align: center; margin-bottom: 25px; font-size: 1.1em; color: #4a5568;"></p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button class="btn btn-save" id="customAlertOk">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 id="confirmationModalTitle" style="text-align: center; color: #4a5568; margin-bottom: 20px;">Emin Misiniz?</h2>
+            <p id="confirmationModalMessage" style="text-align: center; margin-bottom: 25px; font-size: 1.1em; color: #4a5568;"></p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button class="btn btn-save" id="confirmModalYes">Evet</button>
+                <button class="btn btn-cancel" id="confirmModalNo">Hayır</button>
+            </div>
+        </div>
+    </div>
     <script src="teambuilder.js"></script>
 </body>
 </html>

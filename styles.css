@@ -554,4 +554,143 @@
         flex-direction: column; /* Bağlantıları dikey sırala */
         gap: 5px; /* Dikey boşluğu ayarla */
     }
+}/* Modal Stilleri */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+.modal-content h2 {
+    color: #4a5568;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 1.8em;
+}
+
+.modal-content .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #2d3748;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="number"],
+.modal-content select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.modal-content select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234a5568'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 1.2em;
+    padding-right: 40px;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.modal-actions .btn {
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 8px;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+    box-shadow: 0 5px 15px rgba(49, 130, 206, 0.3);
+}
+
+.btn-edit:hover {
+    box-shadow: 0 8px 20px rgba(49, 130, 206, 0.4);
+}
+
+.status-message {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.status-message.success {
+    background: rgba(72, 187, 120, 0.2);
+    color: #2f855a;
+    border: 1px solid #48bb78;
+}
+
+.status-message.error {
+    background: rgba(229, 62, 62, 0.2);
+    color: #c53030;
+    border: 1px solid #e53e3e;
+}
+
+.status-message.info {
+    background: rgba(49, 130, 206, 0.2);
+    color: #2b6cb0;
+    border: 1px solid #3182ce;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }

@@ -135,7 +135,9 @@ function renderPlayersTable() {
     tableBody.innerHTML = players.map(player => `
         <tr>
             <td><strong>${player.name}</strong></td>
-            <td>${player.position}</td> <td>${player.power}</td>    <td>
+            <td>${player.position}</td>
+            <td>${player.power}</td>
+            <td>
                 <input type="checkbox" class="checkbox" 
                        ${player.available ? 'checked' : ''} 
                        onchange="togglePlayerAvailability(${player.id})">
@@ -146,6 +148,9 @@ function renderPlayersTable() {
                 </span>
             </td>
             <td>
+                <button class="btn btn-small btn-edit" onclick="editPlayer(${player.id})">
+                    ✏️ Düzenle
+                </button>
                 <button class="btn btn-small btn-danger" onclick="removePlayer(${player.id})">
                     🗑️ Sil
                 </button>
@@ -153,6 +158,7 @@ function renderPlayersTable() {
         </tr>
     `).join('');
 }
+
 
 // İstatistikleri güncelleme
 function updateStats() {
@@ -450,6 +456,74 @@ function restoreFromText() {
     } catch (error) {
         showStatus('Yedek kodu çözümlenirken hata oluştu!', 'error');
     }
+}
+// *** Yeni Eklenen Fonksiyonlar: Oyuncu Düzenleme ve Modal Yönetimi ***
+
+// Oyuncu düzenleme modalını açar ve verileri doldurur
+function editPlayer(playerId) {
+    const player = players.find(p => p.id === playerId);
+    if (!player) {
+        showCustomAlert('Hata', 'Oyuncu bulunamadı!', 'error');
+        return;
+    }
+
+    document.getElementById('editPlayerId').value = player.id;
+    document.getElementById('editPlayerName').value = player.name;
+    document.getElementById('editPlayerPosition').value = player.position;
+    document.getElementById('editPlayerPower').value = player.power;
+
+    document.getElementById('editPlayerModal').style.display = 'flex'; // Modalı görünür yap
+}
+
+// Oyuncuyu düzenleme modalındaki verilerle kaydeder
+function saveEditedPlayer() {
+    const playerId = parseInt(document.getElementById('editPlayerId').value);
+    const newName = document.getElementById('editPlayerName').value.trim();
+    const newPosition = document.getElementById('editPlayerPosition').value;
+    const newPower = parseInt(document.getElementById('editPlayerPower').value);
+
+    // Güncelleme validasyonu
+    if (!newName) {
+        showStatus('Lütfen oyuncu adını girin!', 'error', 'editStatus');
+        return;
+    }
+    if (!newPosition) {
+        showStatus('Lütfen oyuncu mevkisini seçin!', 'error', 'editStatus');
+        return;
+    }
+    if (isNaN(newPower) || newPower < 0 || newPower > 100) {
+        showStatus('Lütfen oyuncu gücünü 0-100 arasında bir değer olarak girin!', 'error', 'editStatus');
+        return;
+    }
+
+    // Aynı isimde başka bir oyuncu var mı kontrol et (kendisi hariç)
+    if (players.some(p => p.name.toLowerCase() === newName.toLowerCase() && p.id !== playerId)) {
+        showStatus('Bu isimde başka bir oyuncu zaten mevcut!', 'error', 'editStatus');
+        return;
+    }
+
+    const playerIndex = players.findIndex(p => p.id === playerId);
+    if (playerIndex !== -1) {
+        players[playerIndex].name = newName;
+        players[playerIndex].position = newPosition;
+        players[playerIndex].power = newPower;
+        
+        savePlayers();
+        renderPlayersTable();
+        updateStats();
+        showStatus('Oyuncu başarıyla güncellendi!', 'success', 'editStatus');
+        setTimeout(() => {
+            closeEditModal();
+        }, 1000); // Kısa bir gecikme sonrası modalı kapat
+    } else {
+        showStatus('Oyuncu bulunamadı!', 'error', 'editStatus');
+    }
+}
+
+// Oyuncu düzenleme modalını kapatır
+function closeEditModal() {
+    document.getElementById('editPlayerModal').style.display = 'none';
+    document.getElementById('editStatus').style.display = 'none'; // Durum mesajını gizle
 }
 
 // Durum mesajı gösterme
