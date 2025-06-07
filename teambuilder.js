@@ -1,12 +1,48 @@
 // Veri depolama için değişkenler
 let players = [];
+let currentTeamA = [];
+let currentTeamB = [];
+let currentTeamAPower = 0;
+let currentTeamBPower = 0;
 
 // Sayfa yüklendiğinde verileri yükle
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+
 document.addEventListener('DOMContentLoaded', function() {
     loadPlayers();
     updateStats();
     updateAvailableCount();
+    loadThemePreference(); // Load saved theme preference
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
 });
+
+// Theme toggle function
+function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    // Update button icon based on theme
+    if (document.body.classList.contains('dark-mode')) {
+        themeToggleBtn.textContent = '☀️'; // Sun icon for light mode
+        localStorage.setItem('theme', 'dark');
+    } else {
+        themeToggleBtn.textContent = '🌙'; // Moon icon for dark mode
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+// Load saved theme preference from localStorage
+function loadThemePreference() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+    } else {
+        document.body.classList.remove('dark-mode'); // Default to light
+        if (themeToggleBtn) themeToggleBtn.textContent = '🌙';
+    }
+}
 
 // Sekme değiştirme
 function switchTab(tabName) {
@@ -242,11 +278,18 @@ function createTeams() {
     // Ancak basit bir dengeleme için yukarıdaki zaten iş görecektir.
     // Örnek: Eğer teamA çok güçlüyse, teamA'dan bir oyuncuyu teamB'ye taşıyıp teamB'den başka bir oyuncuyu teamA'ya taşıyabiliriz.
 
-    displayTeams(teamA, teamB, teamAPower, teamBPower);
+    // Store current teams and powers globally
+    currentTeamA = [...teamA];
+    currentTeamB = [...teamB];
+    currentTeamAPower = teamAPower;
+    currentTeamBPower = teamBPower;
+
+    displayTeams();
 }
 
 // Takımları görüntüleme
-function displayTeams(teamA, teamB, teamAPower, teamBPower) {
+// function displayTeams(teamA, teamB, teamAPower, teamBPower) { // Parameters removed, using global vars now
+function displayTeams() {
     const teamAList = document.getElementById('teamA');
     const teamBList = document.getElementById('teamB');
     const countA = document.getElementById('countA');
@@ -260,29 +303,37 @@ function displayTeams(teamA, teamB, teamAPower, teamBPower) {
     teamBList.innerHTML = '';
 
     // A takımını ekle
-    teamA.forEach((player, index) => {
+    currentTeamA.forEach((player, index) => {
         const li = document.createElement('li');
-        li.textContent = `${player.name} (${player.position} - ${player.power})`; // Mevki ve gücü göster
+        li.innerHTML = `
+            ${player.name} (${player.position} - ${player.power})
+            <button class="move-btn" onclick="manualMovePlayer(${player.id}, 'B')">➡️ B</button>
+        `;
         li.style.animationDelay = `${index * 0.1}s`;
         teamAList.appendChild(li);
     });
 
     // B takımını ekle
-    teamB.forEach((player, index) => {
+    currentTeamB.forEach((player, index) => {
         const li = document.createElement('li');
-        li.textContent = `${player.name} (${player.position} - ${player.power})`; // Mevki ve gücü göster
+        li.innerHTML = `
+            ${player.name} (${player.position} - ${player.power})
+            <button class="move-btn" onclick="manualMovePlayer(${player.id}, 'A')">⬅️ A</button>
+        `;
         li.style.animationDelay = `${index * 0.1}s`;
         teamBList.appendChild(li);
     });
 
     // Oyuncu sayılarını göster
-    countA.textContent = `Toplam: ${teamA.length} oyuncu`;
-    countB.textContent = `Toplam: ${teamB.length} oyuncu`;
+    countA.textContent = `Toplam: ${currentTeamA.length} oyuncu`;
+    countB.textContent = `Toplam: ${currentTeamB.length} oyuncu`;
 
     // Ortalama güçleri göster
-    avgPowerA.textContent = `Ortalama Güç: ${teamA.length > 0 ? (teamAPower / teamA.length).toFixed(1) : 0}`;
-    avgPowerB.textContent = `Ortalama Güç: ${teamB.length > 0 ? (teamBPower / teamB.length).toFixed(1) : 0}`;
-
+    // Recalculate powers directly in displayTeams for simplicity and accuracy after moves
+    currentTeamAPower = calculateTeamPower(currentTeamA);
+    currentTeamBPower = calculateTeamPower(currentTeamB);
+    avgPowerA.textContent = `Ortalama Güç: ${currentTeamA.length > 0 ? (currentTeamAPower / currentTeamA.length).toFixed(1) : 0}`;
+    avgPowerB.textContent = `Ortalama Güç: ${currentTeamB.length > 0 ? (currentTeamBPower / currentTeamB.length).toFixed(1) : 0}`;
 
     // Takım containerını göster
     teamsContainer.style.display = 'grid';
@@ -529,6 +580,10 @@ function closeEditModal() {
 // Durum mesajı gösterme
 function showStatus(message, type) {
     const statusDiv = document.getElementById('backupStatus');
+    if (!statusDiv) { // Add a guard clause in case the element is not found
+        console.error("Element with ID 'backupStatus' not found.");
+        return;
+    }
     statusDiv.style.display = 'block';
     statusDiv.textContent = message;
     
@@ -551,4 +606,70 @@ function showStatus(message, type) {
     setTimeout(() => {
         statusDiv.style.display = 'none';
     }, 5000);
+}
+
+// Helper function to calculate team power
+function calculateTeamPower(teamArray) {
+    return teamArray.reduce((sum, player) => sum + player.power, 0);
+}
+
+// manualMovePlayer function
+function manualMovePlayer(playerId, targetTeam) {
+    let playerToMove;
+    let sourceTeam;
+    let destinationTeam;
+    let sourceTeamArray;
+    let destinationTeamArray;
+
+    // Find player in Team A
+    playerToMove = currentTeamA.find(p => p.id === playerId);
+    if (playerToMove) {
+        sourceTeam = 'A';
+        sourceTeamArray = currentTeamA;
+    } else {
+        // Find player in Team B
+        playerToMove = currentTeamB.find(p => p.id === playerId);
+        if (playerToMove) {
+            sourceTeam = 'B';
+            sourceTeamArray = currentTeamB;
+        }
+    }
+
+    if (!playerToMove) {
+        console.error("Player not found in current teams for manual move:", playerId);
+        return;
+    }
+
+    // Determine destination team
+    if (targetTeam === 'A') {
+        destinationTeamArray = currentTeamA;
+    } else if (targetTeam === 'B') {
+        destinationTeamArray = currentTeamB;
+    } else {
+        console.error("Invalid target team:", targetTeam);
+        return;
+    }
+
+    // Prevent moving to the same team
+    if (sourceTeam === targetTeam) {
+        console.warn("Player is already in the target team.");
+        return;
+    }
+
+    // Remove player from source team
+    if (sourceTeam === 'A') {
+        currentTeamA = currentTeamA.filter(p => p.id !== playerId);
+    } else {
+        currentTeamB = currentTeamB.filter(p => p.id !== playerId);
+    }
+
+    // Add player to destination team
+    destinationTeamArray.push(playerToMove);
+
+    // Recalculate team powers (displayTeams will also do this, but good to have it here too)
+    currentTeamAPower = calculateTeamPower(currentTeamA);
+    currentTeamBPower = calculateTeamPower(currentTeamB);
+
+    // Refresh the display
+    displayTeams();
 }

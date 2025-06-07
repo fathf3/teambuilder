@@ -95,14 +95,14 @@
             <div class="teams-container" id="teamsContainer" style="display: none;">
                 <div class="team team-a">
                     <h3>🔴 A TAKIMI</h3>
-                    <ul class="player-list" id="teamA"></ul>
+                    <ul class="player-list" id="teamA"></ul> <!-- Player list for Team A -->
                     <div class="team-count" id="countA"></div>
                     <div class="team-power-avg" id="avgPowerA"></div>
                 </div>
                 
                 <div class="team team-b">
                     <h3>🔵 B TAKIMI</h3>
-                    <ul class="player-list" id="teamB"></ul>
+                    <ul class="player-list" id="teamB"></ul> <!-- Player list for Team B -->
                     <div class="team-count" id="countB"></div>
                     <div class="team-power-avg" id="avgPowerB"></div>
                 </div>
@@ -176,6 +176,11 @@
             
                 <a href="#" onclick="alert('Gizlilik Politikası yakında eklenecektir.'); return false;">Gizlilik Politikası</a>
                 <a href="#" onclick="alert('Kullanım Koşulları yakında eklenecektir.'); return false;">Kullanım Koşulları</a>
+
+            <div class="theme-switcher-container" style="margin-top: 10px; text-align: center;">
+                <label for="themeToggleBtn" style="margin-right: 5px; color: #A0AEC0;">Dark Mode:</label>
+                <button id="themeToggleBtn" style="padding: 5px 10px; cursor: pointer; border-radius: 5px; border: 1px solid #A0AEC0; background-color: #4A5568; color: #E2E8F0;">🌙</button>
+            </div>
            
         </div>
     </footer>
