@@ -344,27 +344,49 @@ function displayTeams() {
     }, 300);
 }
 
-// Veri kaydetme (artık sadece geçici bellek)
+// Veri kaydetme (localStorage kullanarak)
 function savePlayers() {
-    // Sadece session süresince bellekte tut
-    window.playersStorage = {
-        players: JSON.stringify(players),
-        timestamp: Date.now()
-    };
+    try {
+        localStorage.setItem('teamBuilderPlayers', JSON.stringify(players));
+    } catch (e) {
+        console.error("Error saving players to localStorage:", e);
+        // Optionally, inform the user if saving fails, though console error might be sufficient for now.
+        // showCustomAlert("Kaydetme Hatası", "Oyuncu listesi tarayıcıda otomatik olarak kaydedilemedi. Yedekleme özelliğini kullanmayı düşünebilirsiniz.", "error");
+    }
 }
 
-// Veri yükleme (sadece session süresince)
+// Veri yükleme (localStorage kullanarak)
 function loadPlayers() {
-    // Session boyunca bellekte tutulan veriyi yükle
-    if (window.playersStorage && window.playersStorage.players) {
-        try {
-            players = JSON.parse(window.playersStorage.players);
-            renderPlayersTable();
-        } catch(e) {
-            console.log('Veri yüklenirken hata oluştu');
+    try {
+        const storedPlayers = localStorage.getItem('teamBuilderPlayers');
+        if (storedPlayers) {
+            const parsedPlayers = JSON.parse(storedPlayers);
+            if (Array.isArray(parsedPlayers)) {
+                // Perform a basic validation of player structure if necessary
+                // For example, check if each player has 'id', 'name', 'power', 'position', 'available'
+                players = parsedPlayers.filter(p =>
+                    typeof p === 'object' && p !== null &&
+                    'id' in p && 'name' in p &&
+                    'power' in p && 'position' in p && 'available' in p
+                );
+                if (players.length !== parsedPlayers.length) {
+                    console.warn("Some invalid player objects were filtered out during loading.");
+                }
+            } else {
+                console.warn("Stored player data is not an array. Initializing with empty list.");
+                players = [];
+            }
+        } else {
+            // No data in localStorage, initialize with empty list
             players = [];
         }
+    } catch (e) {
+        console.error("Error loading players from localStorage:", e);
+        players = []; // Default to empty list on error
+        // Optionally, inform the user if loading fails
+        // showCustomAlert("Yükleme Hatası", "Oyuncu listesi tarayıcıdan yüklenemedi. Veriler bozulmuş olabilir.", "error");
     }
+    // Note: renderPlayersTable() and updateStats() are called in DOMContentLoaded after this.
 }
 
 // Enter tuşu ile oyuncu ekleme
