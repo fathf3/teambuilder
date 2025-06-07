@@ -673,3 +673,69 @@ function manualMovePlayer(playerId, targetTeam) {
     // Refresh the display
     displayTeams();
 }
+function showCustomAlert(title, message, type = 'info') {
+    const alertModal = document.getElementById('customAlertModal');
+    const alertTitle = document.getElementById('customAlertTitle');
+    const alertMessage = document.getElementById('customAlertMessage');
+    const okButton = document.getElementById('customAlertOk');
+
+    alertTitle.textContent = title;
+    alertMessage.textContent = message;
+
+    // Başlık ve mesaj rengini ayarla
+    if (type === 'success') {
+        alertTitle.style.color = '#2f855a';
+        alertMessage.style.color = '#2f855a';
+    } else if (type === 'error') {
+        alertTitle.style.color = '#c53030';
+        alertMessage.style.color = '#c53030';
+    } else if (type === 'info') {
+        alertTitle.style.color = '#2b6cb0';
+        alertMessage.style.color = '#2b6cb0';
+    } else {
+        alertTitle.style.color = '#4a5568';
+        alertMessage.style.color = '#4a5568';
+    }
+
+    alertModal.style.display = 'flex';
+}
+
+// Özel onay modalını gösterir (confirm() yerine)
+function showConfirmation(title, message) {
+    return new Promise((resolve) => {
+        resolveConfirmation = resolve; // Promise'i dışarıya taşı
+        const confirmModal = document.getElementById('confirmationModal');
+        const confirmTitle = document.getElementById('confirmationModalTitle');
+        const confirmMessage = document.getElementById('confirmationModalMessage');
+
+        confirmTitle.textContent = title;
+        confirmMessage.textContent = message;
+
+        confirmModal.style.display = 'flex';
+    });
+}
+
+// showStatus fonksiyonunu modalın içindeki status div'i için de kullanabilmek adına güncellendi.
+// Eğer targetId verilirse o div'i kullanır, yoksa backupStatus'u kullanır.
+function showStatus(message, type, targetId = 'backupStatus') {
+    const statusDiv = document.getElementById(targetId);
+    if (!statusDiv) return; // Hedef div yoksa işlem yapma
+
+    statusDiv.style.display = 'block';
+    statusDiv.textContent = message;
+    
+    if (type === 'success') {
+        statusDiv.className = 'status-message success';
+    } else if (type === 'error') {
+        statusDiv.className = 'status-message error';
+    } else if (type === 'info') {
+        statusDiv.className = 'status-message info';
+    }
+    
+    // Sadece backupStatus için otomatik gizleme yapalım, editStatus için manuel kontrol daha iyi
+    if (targetId === 'backupStatus') {
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
+}
