@@ -465,11 +465,17 @@ function generateBackupText() {
         version: '1.0'
     };
 
-    const backupText = btoa(JSON.stringify(backupData)); // Base64 encode
+    const jsonString = JSON.stringify(backupData);
+    const backupText = toBase64Unicode(jsonString); // Unicode-safe
+
     document.getElementById('backupText').value = backupText;
     document.getElementById('copyBtn').style.display = 'inline-block';
-    
+
     showStatus('Yedek kodu oluşturuldu! Kopyalamayı unutmayın.', 'info');
+}
+
+function toBase64Unicode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
 }
 
 // Yedek kodunu kopyalama
@@ -485,7 +491,9 @@ function copyBackupText() {
         showStatus('Kopyalama başarısız. Manuel olarak seçip kopyalayın.', 'error');
     }
 }
-
+function fromBase64Unicode(str) {
+    return decodeURIComponent(escape(atob(str)));
+}
 // Metinden geri yükleme
 function restoreFromText() {
     const backupText = document.getElementById('backupText').value.trim();
@@ -496,7 +504,7 @@ function restoreFromText() {
     }
 
     try {
-        const decodedData = JSON.parse(atob(backupText)); // Base64 decode
+        const decodedData = JSON.parse(fromBase64Unicode(backupText));
         
         if (decodedData.players && Array.isArray(decodedData.players)) {
             if (players.length > 0) {
