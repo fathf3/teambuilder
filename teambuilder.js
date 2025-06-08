@@ -10,6 +10,7 @@ const themeToggleBtn = document.getElementById('themeToggleBtn');
 
 document.addEventListener('DOMContentLoaded', function() {
     loadPlayers();
+    renderPlayersTable();  
     updateStats();
     updateAvailableCount();
     loadThemePreference(); // Load saved theme preference
@@ -223,61 +224,61 @@ function updateAvailableCount() {
         createBtn.textContent = '🎲 TAKIMLARI OLUŞTUR';
     }
 }
+function shuffleArray(array) {
+    return array
+        .map(item => ({ item, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ item }) => item);
+}
 
+// Takımları oluşturma
 function createTeams() {
     const availablePlayers = players.filter(p => p.available);
-    
     if (availablePlayers.length < 2) {
         alert('Takım oluşturmak için en az 2 oyuncu gereklidir!');
         return;
     }
 
-    // Takımları mevki ve güç dengesine göre oluşturma
-    // Bu algoritma basittir, daha karmaşık dengeleme için optimizasyon yapılabilir.
     const teamA = [];
     const teamB = [];
-    let teamAPower = 0;
-    let teamBPower = 0;
 
-    // Oyuncuları güçlerine göre azalan sırada sırala
-    const sortedPlayers = [...availablePlayers].sort((a, b) => b.power - a.power);
-
-    // Mevkilere göre oyuncu havuzları oluştur
     const positionPools = {
         'Kaleci': [],
         'Defans': [],
         'Orta Saha': [],
         'Forvet': [],
-        'Libero': [] // Eğer libero mevkisi varsa
+        'Libero': []
     };
 
-    sortedPlayers.forEach(player => {
-        if (positionPools[player.position]) {
-            positionPools[player.position].push(player);
+    // Mevkilere göre oyuncuları ayır
+    availablePlayers.forEach(p => {
+        if (positionPools[p.position]) {
+            positionPools[p.position].push(p);
         }
     });
 
-    // Her mevkiden sırayla takımlara oyuncu dağıt
+    // Her mevkiden rastgele sırala ve dengeye göre dağıt
     for (const position in positionPools) {
-        const playersInPosition = positionPools[position];
-        for (let i = 0; i < playersInPosition.length; i++) {
-            const player = playersInPosition[i];
+        const shuffled = shuffleArray(positionPools[position]);
+
+        shuffled.forEach(player => {
+            const teamAPower = calculateTeamPower(teamA);
+            const teamBPower = calculateTeamPower(teamB);
+
             if (teamAPower <= teamBPower) {
                 teamA.push(player);
-                teamAPower += player.power;
             } else {
                 teamB.push(player);
-                teamBPower += player.power;
             }
-        }
+        });
     }
 
-    // Eğer takımlar arasında hala fark varsa, en zayıf takımdan en güçlü takıma oyuncu transferi yap
-    // Bu kısım, dengeleme algoritmasını daha da iyileştirmek için eklenebilir.
-    // Ancak basit bir dengeleme için yukarıdaki zaten iş görecektir.
-    // Örnek: Eğer teamA çok güçlüyse, teamA'dan bir oyuncuyu teamB'ye taşıyıp teamB'den başka bir oyuncuyu teamA'ya taşıyabiliriz.
+    currentTeamA = [...teamA];
+    currentTeamB = [...teamB];
+    currentTeamAPower = calculateTeamPower(teamA);
+    currentTeamBPower = calculateTeamPower(teamB);
 
-    displayTeams(teamA, teamB, teamAPower, teamBPower);
+    displayTeams();
 }
 
 // Takımları görüntüleme
@@ -354,21 +355,17 @@ function loadPlayers() {
         const storedPlayers = localStorage.getItem('teamBuilderPlayers');
         if (storedPlayers) {
             const parsedPlayers = JSON.parse(storedPlayers);
-            
             if (Array.isArray(parsedPlayers)) {
-                players = parsedPlayers.filter(p => {
-                    const isValidPlayer = typeof p === 'object' && p !== null &&
-                                   'id' in p && // Typically numbers (Date.now())
-                                   'name' in p && typeof p.name === 'string' && p.name.trim() !== '' &&
-                                   'power' in p && typeof p.power === 'number' && !isNaN(p.power) &&
-                                   'position' in p && typeof p.position === 'string' &&
-                                   'available' in p && typeof p.available === 'boolean';
-                    
-                    if (!isValidPlayer) {
-                        console.warn("An invalid or incomplete player object was filtered out during loading:", p);
-                    }
-                    return isValidPlayer;
-                });
+                // Perform a basic validation of player structure if necessary
+                // For example, check if each player has 'id', 'name', 'power', 'position', 'available'
+                players = parsedPlayers.filter(p =>
+                    typeof p === 'object' && p !== null &&
+                    'id' in p && 'name' in p &&
+                    'power' in p && 'position' in p && 'available' in p
+                );
+                if (players.length !== parsedPlayers.length) {
+                    console.warn("Some invalid player objects were filtered out during loading.");
+                }
             } else {
                 console.warn("Stored player data is not an array. Initializing with empty list.");
                 players = [];
@@ -377,12 +374,13 @@ function loadPlayers() {
             // No data in localStorage, initialize with empty list
             players = [];
         }
-        renderPlayersTable(); // Yüklenen verileri tabloya yansıt
     } catch (e) {
         console.error("Error loading players from localStorage:", e);
         players = []; // Default to empty list on error
-        showCustomAlert("Yükleme Hatası", "Oyuncu listesi tarayıcıdan yüklenemedi. Veriler bozulmuş olabilir.", "error");
+        // Optionally, inform the user if loading fails
+        // showCustomAlert("Yükleme Hatası", "Oyuncu listesi tarayıcıdan yüklenemedi. Veriler bozulmuş olabilir.", "error");
     }
+    // Note: renderPlayersTable() and updateStats() are called in DOMContentLoaded after this.
 }
 
 // Enter tuşu ile oyuncu ekleme
@@ -690,4 +688,70 @@ function manualMovePlayer(playerId, targetTeam) {
 
     // Refresh the display
     displayTeams();
+}
+function showCustomAlert(title, message, type = 'info') {
+    const alertModal = document.getElementById('customAlertModal');
+    const alertTitle = document.getElementById('customAlertTitle');
+    const alertMessage = document.getElementById('customAlertMessage');
+    const okButton = document.getElementById('customAlertOk');
+
+    alertTitle.textContent = title;
+    alertMessage.textContent = message;
+
+    // Başlık ve mesaj rengini ayarla
+    if (type === 'success') {
+        alertTitle.style.color = '#2f855a';
+        alertMessage.style.color = '#2f855a';
+    } else if (type === 'error') {
+        alertTitle.style.color = '#c53030';
+        alertMessage.style.color = '#c53030';
+    } else if (type === 'info') {
+        alertTitle.style.color = '#2b6cb0';
+        alertMessage.style.color = '#2b6cb0';
+    } else {
+        alertTitle.style.color = '#4a5568';
+        alertMessage.style.color = '#4a5568';
+    }
+
+    alertModal.style.display = 'flex';
+}
+
+// Özel onay modalını gösterir (confirm() yerine)
+function showConfirmation(title, message) {
+    return new Promise((resolve) => {
+        resolveConfirmation = resolve; // Promise'i dışarıya taşı
+        const confirmModal = document.getElementById('confirmationModal');
+        const confirmTitle = document.getElementById('confirmationModalTitle');
+        const confirmMessage = document.getElementById('confirmationModalMessage');
+
+        confirmTitle.textContent = title;
+        confirmMessage.textContent = message;
+
+        confirmModal.style.display = 'flex';
+    });
+}
+
+// showStatus fonksiyonunu modalın içindeki status div'i için de kullanabilmek adına güncellendi.
+// Eğer targetId verilirse o div'i kullanır, yoksa backupStatus'u kullanır.
+function showStatus(message, type, targetId = 'backupStatus') {
+    const statusDiv = document.getElementById(targetId);
+    if (!statusDiv) return; // Hedef div yoksa işlem yapma
+
+    statusDiv.style.display = 'block';
+    statusDiv.textContent = message;
+    
+    if (type === 'success') {
+        statusDiv.className = 'status-message success';
+    } else if (type === 'error') {
+        statusDiv.className = 'status-message error';
+    } else if (type === 'info') {
+        statusDiv.className = 'status-message info';
+    }
+    
+    // Sadece backupStatus için otomatik gizleme yapalım, editStatus için manuel kontrol daha iyi
+    if (targetId === 'backupStatus') {
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
 }
