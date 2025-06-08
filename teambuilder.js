@@ -10,6 +10,7 @@ const themeToggleBtn = document.getElementById('themeToggleBtn');
 
 document.addEventListener('DOMContentLoaded', function() {
     loadPlayers();
+    renderPlayersTable();  
     updateStats();
     updateAvailableCount();
     loadThemePreference(); // Load saved theme preference
@@ -223,68 +224,61 @@ function updateAvailableCount() {
         createBtn.textContent = '🎲 TAKIMLARI OLUŞTUR';
     }
 }
+function shuffleArray(array) {
+    return array
+        .map(item => ({ item, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ item }) => item);
+}
 
 // Takımları oluşturma
 function createTeams() {
     const availablePlayers = players.filter(p => p.available);
-    
     if (availablePlayers.length < 2) {
         alert('Takım oluşturmak için en az 2 oyuncu gereklidir!');
         return;
     }
 
-    // Takımları mevki ve güç dengesine göre oluşturma
-    // Bu algoritma basittir, daha karmaşık dengeleme için optimizasyon yapılabilir.
     const teamA = [];
     const teamB = [];
-    let teamAPower = 0;
-    let teamBPower = 0;
 
-    // Oyuncuları güçlerine göre azalan sırada sırala
-    const sortedPlayers = [...availablePlayers].sort((a, b) => b.power - a.power);
-
-    // Mevkilere göre oyuncu havuzları oluştur
     const positionPools = {
         'Kaleci': [],
         'Defans': [],
         'Orta Saha': [],
         'Forvet': [],
-        'Libero': [] // Eğer libero mevkisi varsa
+        'Libero': []
     };
 
-    sortedPlayers.forEach(player => {
-        if (positionPools[player.position]) {
-            positionPools[player.position].push(player);
+    // Mevkilere göre oyuncuları ayır
+    availablePlayers.forEach(p => {
+        if (positionPools[p.position]) {
+            positionPools[p.position].push(p);
         }
     });
 
-    // Her mevkiden sırayla takımlara oyuncu dağıt
+    // Her mevkiden rastgele sırala ve dengeye göre dağıt
     for (const position in positionPools) {
-        const playersInPosition = positionPools[position];
-        for (let i = 0; i < playersInPosition.length; i++) {
-            const player = playersInPosition[i];
+        const shuffled = shuffleArray(positionPools[position]);
+
+        shuffled.forEach(player => {
+            const teamAPower = calculateTeamPower(teamA);
+            const teamBPower = calculateTeamPower(teamB);
+
             if (teamAPower <= teamBPower) {
                 teamA.push(player);
-                teamAPower += player.power;
             } else {
                 teamB.push(player);
-                teamBPower += player.power;
             }
-        }
+        });
     }
 
-    // Eğer takımlar arasında hala fark varsa, en zayıf takımdan en güçlü takıma oyuncu transferi yap
-    // Bu kısım, dengeleme algoritmasını daha da iyileştirmek için eklenebilir.
-    // Ancak basit bir dengeleme için yukarıdaki zaten iş görecektir.
-    // Örnek: Eğer teamA çok güçlüyse, teamA'dan bir oyuncuyu teamB'ye taşıyıp teamB'den başka bir oyuncuyu teamA'ya taşıyabiliriz.
-
-    // Store current teams and powers globally
     currentTeamA = [...teamA];
     currentTeamB = [...teamB];
-    currentTeamAPower = teamAPower;
-    currentTeamBPower = teamBPower;
+    currentTeamAPower = calculateTeamPower(teamA);
+    currentTeamBPower = calculateTeamPower(teamB);
 
-    displayTeams(currentTeamA,currentTeamB,currentTeamAPower,currentTeamBPower);
+    displayTeams();
 }
 
 // Takımları görüntüleme
