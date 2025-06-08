@@ -361,17 +361,21 @@ function loadPlayers() {
         const storedPlayers = localStorage.getItem('teamBuilderPlayers');
         if (storedPlayers) {
             const parsedPlayers = JSON.parse(storedPlayers);
+            
             if (Array.isArray(parsedPlayers)) {
-                // Perform a basic validation of player structure if necessary
-                // For example, check if each player has 'id', 'name', 'power', 'position', 'available'
-                players = parsedPlayers.filter(p =>
-                    typeof p === 'object' && p !== null &&
-                    'id' in p && 'name' in p &&
-                    'power' in p && 'position' in p && 'available' in p
-                );
-                if (players.length !== parsedPlayers.length) {
-                    console.warn("Some invalid player objects were filtered out during loading.");
-                }
+                players = parsedPlayers.filter(p => {
+                    const isValidPlayer = typeof p === 'object' && p !== null &&
+                                   'id' in p && // Typically numbers (Date.now())
+                                   'name' in p && typeof p.name === 'string' && p.name.trim() !== '' &&
+                                   'power' in p && typeof p.power === 'number' && !isNaN(p.power) &&
+                                   'position' in p && typeof p.position === 'string' &&
+                                   'available' in p && typeof p.available === 'boolean';
+                    
+                    if (!isValidPlayer) {
+                        console.warn("An invalid or incomplete player object was filtered out during loading:", p);
+                    }
+                    return isValidPlayer;
+                });
             } else {
                 console.warn("Stored player data is not an array. Initializing with empty list.");
                 players = [];
@@ -380,13 +384,12 @@ function loadPlayers() {
             // No data in localStorage, initialize with empty list
             players = [];
         }
+        renderPlayersTable(); // Yüklenen verileri tabloya yansıt
     } catch (e) {
         console.error("Error loading players from localStorage:", e);
         players = []; // Default to empty list on error
-        // Optionally, inform the user if loading fails
-        // showCustomAlert("Yükleme Hatası", "Oyuncu listesi tarayıcıdan yüklenemedi. Veriler bozulmuş olabilir.", "error");
+        showCustomAlert("Yükleme Hatası", "Oyuncu listesi tarayıcıdan yüklenemedi. Veriler bozulmuş olabilir.", "error");
     }
-    // Note: renderPlayersTable() and updateStats() are called in DOMContentLoaded after this.
 }
 
 // Enter tuşu ile oyuncu ekleme
@@ -694,70 +697,4 @@ function manualMovePlayer(playerId, targetTeam) {
 
     // Refresh the display
     displayTeams();
-}
-function showCustomAlert(title, message, type = 'info') {
-    const alertModal = document.getElementById('customAlertModal');
-    const alertTitle = document.getElementById('customAlertTitle');
-    const alertMessage = document.getElementById('customAlertMessage');
-    const okButton = document.getElementById('customAlertOk');
-
-    alertTitle.textContent = title;
-    alertMessage.textContent = message;
-
-    // Başlık ve mesaj rengini ayarla
-    if (type === 'success') {
-        alertTitle.style.color = '#2f855a';
-        alertMessage.style.color = '#2f855a';
-    } else if (type === 'error') {
-        alertTitle.style.color = '#c53030';
-        alertMessage.style.color = '#c53030';
-    } else if (type === 'info') {
-        alertTitle.style.color = '#2b6cb0';
-        alertMessage.style.color = '#2b6cb0';
-    } else {
-        alertTitle.style.color = '#4a5568';
-        alertMessage.style.color = '#4a5568';
-    }
-
-    alertModal.style.display = 'flex';
-}
-
-// Özel onay modalını gösterir (confirm() yerine)
-function showConfirmation(title, message) {
-    return new Promise((resolve) => {
-        resolveConfirmation = resolve; // Promise'i dışarıya taşı
-        const confirmModal = document.getElementById('confirmationModal');
-        const confirmTitle = document.getElementById('confirmationModalTitle');
-        const confirmMessage = document.getElementById('confirmationModalMessage');
-
-        confirmTitle.textContent = title;
-        confirmMessage.textContent = message;
-
-        confirmModal.style.display = 'flex';
-    });
-}
-
-// showStatus fonksiyonunu modalın içindeki status div'i için de kullanabilmek adına güncellendi.
-// Eğer targetId verilirse o div'i kullanır, yoksa backupStatus'u kullanır.
-function showStatus(message, type, targetId = 'backupStatus') {
-    const statusDiv = document.getElementById(targetId);
-    if (!statusDiv) return; // Hedef div yoksa işlem yapma
-
-    statusDiv.style.display = 'block';
-    statusDiv.textContent = message;
-    
-    if (type === 'success') {
-        statusDiv.className = 'status-message success';
-    } else if (type === 'error') {
-        statusDiv.className = 'status-message error';
-    } else if (type === 'info') {
-        statusDiv.className = 'status-message info';
-    }
-    
-    // Sadece backupStatus için otomatik gizleme yapalım, editStatus için manuel kontrol daha iyi
-    if (targetId === 'backupStatus') {
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 5000);
-    }
 }
