@@ -224,7 +224,6 @@ function updateAvailableCount() {
     }
 }
 
-// Takımları oluşturma
 function createTeams() {
     const availablePlayers = players.filter(p => p.available);
     
@@ -278,13 +277,7 @@ function createTeams() {
     // Ancak basit bir dengeleme için yukarıdaki zaten iş görecektir.
     // Örnek: Eğer teamA çok güçlüyse, teamA'dan bir oyuncuyu teamB'ye taşıyıp teamB'den başka bir oyuncuyu teamA'ya taşıyabiliriz.
 
-    // Store current teams and powers globally
-    currentTeamA = [...teamA];
-    currentTeamB = [...teamB];
-    currentTeamAPower = teamAPower;
-    currentTeamBPower = teamBPower;
-
-    displayTeams();
+    displayTeams(teamA, teamB, teamAPower, teamBPower);
 }
 
 // Takımları görüntüleme
